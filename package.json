@@ -1,0 +1,19 @@
+{
+  "name": "@toggled.dev/toggled-client-js",
+  "version": "1.0.0",
+  "description": "A browser client that can be used together with the Toggled.dev management platform.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toggled-dev/toggled-client-js.git"
+  },
+  "author": "@toggled-dev",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/toggled-dev/toggled-client-js/issues"
+  },
+  "homepage": "https://github.com/toggled-dev/toggled-client-js#readme"
+}
