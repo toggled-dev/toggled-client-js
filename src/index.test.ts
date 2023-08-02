@@ -4,9 +4,9 @@ import * as data from './test/testdata.json';
 import IStorageProvider from './storage-provider';
 import {
     EVENTS,
+    TOGGLED_PLATFORM_URLS,
     IConfig,
     IMutableContext,
-    IToggle,
     ToggledClient,
 } from './index';
 import { getTypeSafeRequest, getTypeSafeRequestUrl } from './test';
@@ -22,7 +22,7 @@ afterEach(() => {
 
 test('Should initialize toggled-client', () => {
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -33,7 +33,7 @@ test('Should initialize toggled-client', () => {
 test('Should perform an initial fetch', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -49,7 +49,7 @@ test('Should perform an initial fetch', async () => {
 // test('Should perform an initial fetch as POST', async () => {
 //     fetchMock.mockResponseOnce(JSON.stringify(data));
 //     const config: IConfig = {
-//         url: 'http://localhost/test',
+//         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
 //         appName: 'webAsPOST',
 //         usePOSTrequests: true,
@@ -67,7 +67,7 @@ test('Should perform an initial fetch', async () => {
 test('Should perform an initial fetch as GET', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'webAsGET',
     };
@@ -82,7 +82,7 @@ test('Should perform an initial fetch as GET', async () => {
 test('Should have correct variant', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -100,7 +100,7 @@ test('Should have correct variant', async () => {
 test('Should return default variant if not found', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -131,7 +131,7 @@ test('Should handle error and return false for isEnabled', async () => {
 
     const storageProvider = new Store();
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         storageProvider,
@@ -163,7 +163,7 @@ test('Should read session id from localStorage', async () => {
 
     const storageProvider = new Store();
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         storageProvider,
@@ -204,7 +204,7 @@ test('Should read toggles from localStorage', async () => {
 
     const storageProvider = new Store();
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         storageProvider,
@@ -263,7 +263,7 @@ test('Should bootstrap data when bootstrap is provided', async () => {
     expect(localStorage.getItem(storeKey)).toBe(JSON.stringify(initialData));
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -323,7 +323,7 @@ test('Should set internal toggle state when bootstrap is set, before client is s
     expect(localStorage.getItem(storeKey)).toBe(JSON.stringify(initialData));
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -382,7 +382,7 @@ test('Should not bootstrap data when bootstrapOverride is false and localStorage
     expect(localStorage.getItem(storeKey)).toBe(JSON.stringify(initialData));
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -423,7 +423,7 @@ test('Should bootstrap when bootstrapOverride is false and local storage is empt
     expect(localStorage.getItem(storeKey)).toBe(JSON.stringify([]));
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -462,7 +462,7 @@ test('Should not bootstrap data when bootstrap is []', async () => {
     expect(localStorage.getItem(storeKey)).toBe(JSON.stringify(initialData));
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap: [],
@@ -499,7 +499,7 @@ test('Should publish ready event when bootstrap is provided, before client is st
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -514,7 +514,7 @@ test('Should publish ready event when bootstrap is provided, before client is st
 test('Should publish ready when initial fetch completed', (done) => {
     fetchMock.mockResponseOnce(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -546,7 +546,7 @@ test('Should publish error when initial init fails', (done) => {
 
     const storageProvider = new Store();
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         storageProvider,
@@ -566,7 +566,7 @@ test('Should publish error when fetch fails', (done) => {
     fetchMock.mockReject(givenError);
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -586,7 +586,7 @@ test.each([400, 401, 403, 404, 429, 500, 502, 503])(
         fetchMock.mockResponseOnce('{}', { status: errorCode });
 
         const config: IConfig = {
-            url: 'http://localhost/test',
+            url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
             appName: 'web',
         };
@@ -605,7 +605,7 @@ test('Should publish update when state changes after refreshInterval', async () 
         [JSON.stringify(data), { status: 200 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
         appName: 'web',
@@ -633,7 +633,7 @@ test(`If refresh is disabled should not fetch`, async () => {
     );
     const config: IConfig = {
         disableRefresh: true,
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
         appName: 'web',
@@ -651,7 +651,7 @@ test('Should include etag in second request', async () => {
         [JSON.stringify(data), { status: 304, headers: { ETag: etag } }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
         appName: 'web',
@@ -679,7 +679,7 @@ test('Should add clientKey as Authorization header', async () => {
         [JSON.stringify(data), { status: 200 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: 'some123key',
         appName: 'web',
     };
@@ -698,33 +698,33 @@ test('Should add clientKey as Authorization header', async () => {
 test('Should require appName', () => {
     expect(() => {
         new ToggledClient({
-            url: 'http://localhost/test',
+            url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
             appName: '',
         });
     }).toThrow();
 });
 
-test('Should require url', () => {
-    expect(() => {
-        new ToggledClient({ url: '', clientKey: '12', appName: 'web' });
-    }).toThrow();
-});
+// test('Should require url', () => {
+//     expect(() => {
+//         new ToggledClient({ url: '', clientKey: '12', appName: 'web' });
+//     }).toThrow();
+// });
 
-test('Should require valid url', () => {
-    expect(() => {
-        new ToggledClient({
-            url: 'not-a-url',
-            clientKey: '12',
-            appName: 'web',
-        });
-    }).toThrow();
-});
+// test('Should require valid url', () => {
+//     expect(() => {
+//         new ToggledClient({
+//             url: 'not-a-url',
+//             clientKey: '12',
+//             appName: 'web',
+//         });
+//     }).toThrow();
+// });
 
 test('Should require valid clientKey', () => {
     expect(() => {
         new ToggledClient({
-            url: 'http://localhost/test',
+            url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '',
             appName: 'web',
         });
@@ -738,7 +738,7 @@ test('Should stop fetching when stop is called', async () => {
         [JSON.stringify(data), { status: 200 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
         appName: 'web',
@@ -773,7 +773,7 @@ test('Should include context fields on request', async () => {
         },
     };
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -811,7 +811,7 @@ test('Should note include context fields with "null" value', async () => {
         },
     };
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -837,7 +837,7 @@ test('Should update context fields with await', async () => {
         [JSON.stringify(data), { status: 304 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -874,7 +874,7 @@ test('Should update context fields on request', async () => {
         [JSON.stringify(data), { status: 304 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -911,7 +911,7 @@ test('Updating context should wait on asynchronous start', async () => {
         [JSON.stringify(data), { status: 200 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -932,7 +932,7 @@ test('Should not replace sessionId when updating context', async () => {
         [JSON.stringify(data), { status: 304 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -964,7 +964,7 @@ test('Should not add property fields when properties is an empty object', async 
         [JSON.stringify(data), { status: 304 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         environment: 'prod',
@@ -993,7 +993,7 @@ test('Should use default environment', async () => {
         [JSON.stringify(data), { status: 200 }]
     );
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -1010,7 +1010,7 @@ test('Should use default environment', async () => {
 test('Should setContextField with userId', async () => {
     const userId = 'some-id-123';
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -1023,7 +1023,7 @@ test('Should setContextField with userId', async () => {
 test('Should setContextField with sessionId', async () => {
     const sessionId = 'some-session-id-123';
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -1036,7 +1036,7 @@ test('Should setContextField with sessionId', async () => {
 test('Should setContextField with remoteAddress', async () => {
     const remoteAddress = '10.0.0.1';
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -1049,7 +1049,7 @@ test('Should setContextField with remoteAddress', async () => {
 test('Should setContextField with custom property', async () => {
     const clientId = 'some-client-id-443';
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
     };
@@ -1063,7 +1063,7 @@ test('Should setContextField with custom property and keep existing props', asyn
     const clientId = 'some-client-id-443';
     const initialContext = { properties: { someField: '123' } };
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         context: initialContext,
@@ -1080,7 +1080,7 @@ test('Should setContextField with custom property and keep existing props', asyn
 test('Should override userId via setContextField', async () => {
     const userId = 'some-user-id-552';
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         context: { userId: 'old' },
@@ -1094,7 +1094,7 @@ test('Should override userId via setContextField', async () => {
 test('Initializing client twice should show a console warning', async () => {
     console.error = jest.fn();
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         context: { userId: 'old' },
@@ -1111,7 +1111,7 @@ test('Should pass under custom header clientKey', async () => {
     fetchMock.mockResponseOnce(JSON.stringify(data));
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         headerName: 'NotAuthorization',
@@ -1147,7 +1147,7 @@ test('Should emit impression events on isEnabled calls when impressionData is tr
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -1176,7 +1176,7 @@ test('Should emit impression events on isEnabled calls when impressionData is tr
 //         [JSON.stringify(data), { status: 200 }]
 //     );
 //     const config: IConfig = {
-//         url: 'http://localhost/test',
+//         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: 'extrakey',
 //         appName: 'web',
 //         customHeaders: {
@@ -1189,7 +1189,7 @@ test('Should emit impression events on isEnabled calls when impressionData is tr
 //     jest.advanceTimersByTime(1001);
 
 //     const featureRequest = getTypeSafeRequest(fetchMock, 0);
-    
+
 //     expect(featureRequest.headers).toMatchObject({
 //         customheader1: 'header1val',
 //         customheader2: 'header2val',
@@ -1220,7 +1220,7 @@ test('Should emit impression events on getVariant calls when impressionData is t
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -1256,7 +1256,7 @@ test('Should not emit impression events on isEnabled calls when impressionData i
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -1291,7 +1291,7 @@ test('Should emit impression events on isEnabled calls when impressionData is fa
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -1333,7 +1333,7 @@ test('Should emit impression events on isEnabled calls when toggle is unknown an
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -1371,7 +1371,7 @@ test('Should emit impression events on getVariant calls when impressionData is f
     ];
 
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         bootstrap,
@@ -1402,7 +1402,7 @@ test('Should emit impression events on getVariant calls when impressionData is f
 test('Should publish ready only when the first fetch was successful', async () => {
     fetchMock.mockResponse(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         refreshInterval: 1,
@@ -1426,21 +1426,21 @@ test('Should publish ready only when the first fetch was successful', async () =
     expect(fetchMock).toHaveBeenCalledTimes(3);
 });
 
-test('Should be able to configure ToggledClient with a URL instance', () => {
-    const url = new URL('test', 'http://localhost');
-    const config: IConfig = {
-        url,
-        clientKey: '12',
-        appName: 'web',
-    };
-    const client = new ToggledClient(config);
-    expect(client).toHaveProperty('url', url);
-});
+// test('Should be able to configure ToggledClient with a URL instance', () => {
+//     const url = new URL('test', 'http://localhost');
+//     const config: IConfig = {
+//         url,
+//         clientKey: '12',
+//         appName: 'web',
+//     };
+//     const client = new ToggledClient(config);
+//     expect(client).toHaveProperty('url', url);
+// });
 
 test("Should update toggles even when refresh interval is set to '0'", async () => {
     fetchMock.mockResponse(JSON.stringify(data));
     const config: IConfig = {
-        url: 'http://localhost/test',
+        url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         appName: 'web',
         refreshInterval: 0,
@@ -1458,7 +1458,7 @@ test.each([null, undefined])(
     async () => {
         fetchMock.mockResponse(JSON.stringify(data));
         const config: IConfig = {
-            url: 'http://localhost/test',
+            url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
             appName: 'web',
         };
@@ -1491,7 +1491,7 @@ test.each([null, undefined])(
 //     ];
 
 //     const config: IConfig = {
-//         url: 'http://localhost/test',
+//         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
 //         appName: 'web',
 //         fetch: async () => {
@@ -1532,11 +1532,10 @@ test.each([null, undefined])(
 //     client.stop();
 // });
 
-
 test('Should require disabled metrics', () => {
     expect(() => {
         new ToggledClient({
-            url: 'http://localhost/test',
+            url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
             appName: 'web',
             disableMetrics: false,
@@ -1547,7 +1546,7 @@ test('Should require disabled metrics', () => {
 test('Should require GET requests', () => {
     expect(() => {
         new ToggledClient({
-            url: 'http://localhost/test',
+            url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
             appName: 'web',
             usePOSTrequests: true,

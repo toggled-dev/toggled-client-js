@@ -25,7 +25,7 @@ interface IMutableContext {
 type IContext = IStaticContext & IMutableContext;
 
 interface IConfig extends IStaticContext {
-    url: URL | string;
+    url: TOGGLED_PLATFORM_URLS;
     clientKey: string;
     disableRefresh?: boolean;
     refreshInterval?: number;
@@ -66,6 +66,14 @@ export const EVENTS = {
     IMPRESSION: 'impression',
     SENT: 'sent',
 };
+
+export enum TOGGLED_PLATFORM_URLS {
+    USE1 = 'https://us-east-1-api.saas.toggled.dev/client/vendors/unleash/proxy',
+    EUC1 = 'https://eu-central-1-api.saas.toggled.dev/client/vendors/unleash/proxy',
+    APS1 = 'https://ap-south-1-api.saas.toggled.dev/client/vendors/unleash/proxy',
+    DEVELOP = 'https://develop-api.lab.toggled.dev/client/vendors/unleash/proxy',
+    TEST = 'http://localhost/test',
+}
 
 const IMPRESSION_EVENTS = {
     IS_ENABLED: 'isEnabled',
@@ -143,14 +151,14 @@ export class ToggledClient extends TinyEmitter {
         }
         if (!disableMetrics) {
             throw new Error('metrics are not currently supported.');
-        }       
+        }
         if (usePOSTrequests) {
             throw new Error('POST requests are not currently supported.');
-        }             
+        }
         this.eventsHandler = new EventsHandler();
         this.impressionDataAll = impressionDataAll;
         this.toggles = bootstrap && bootstrap.length > 0 ? bootstrap : [];
-        this.url = url instanceof URL ? url : new URL(url);
+        this.url = new URL(url);
         this.clientKey = clientKey;
         this.headerName = headerName;
         this.customHeaders = customHeaders;
