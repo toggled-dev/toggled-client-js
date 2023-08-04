@@ -6,7 +6,7 @@ import {
     EVENTS,
     TOGGLED_PLATFORM_URLS,
     IConfig,
-    IMutableContext,
+    IContext,
     ToggledClient,
     IToggle,
     TOGGLES_STATUS,
@@ -27,7 +27,6 @@ test('Should initialize toggled-client', () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     new ToggledClient(config);
     expect(config.url).toBe('http://localhost/test');
@@ -38,7 +37,6 @@ test('Should perform an initial fetch', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     await client.start();
@@ -72,7 +70,6 @@ test('Should perform an initial fetch as GET', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'webAsGET',
     };
     const client = new ToggledClient(config);
     await client.start();
@@ -82,41 +79,32 @@ test('Should perform an initial fetch as GET', async () => {
     expect(request.method).toBe('GET');
 });
 
-// test('Should have correct variant', async () => {
-//     fetchMock.mockResponseOnce(JSON.stringify(data));
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//         appName: 'web',
-//     };
-//     const client = new ToggledClient(config);
-//     await client.start();
-//     const variant = client.getVariant('variantToggle');
-//     const payload = variant.payload || { type: 'undef', value: '' };
-//     client.stop();
-//     expect(variant.name).toBe('green');
-//     expect(variant.enabled).toBe(true);
-//     expect(payload.type).toBe('string');
-//     expect(payload.value).toBe('some-text');
-// });
+test('Should have correct value', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(data));
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+    };
+    const client = new ToggledClient(config);
+    await client.start();
+    const value = client.getValue('stringToggle');
+    client.stop();
+    expect(value).toBe('some-text');
+});
 
-// test('Should return default variant if not found', async () => {
-//     fetchMock.mockResponseOnce(JSON.stringify(data));
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//         appName: 'web',
-//     };
-//     const client = new ToggledClient(config);
-//     await client.start();
-//     const variant = client.getVariant('missingToggle');
-//     const payload = variant.payload || { type: 'undef', value: '' };
-//     client.stop();
-//     expect(variant.name).toBe('disabled');
-//     expect(variant.enabled).toBe(false);
-//     expect(payload.type).toBe('undef');
-//     expect(payload.value).toBe('');
-// });
+test('Should return undefined if not found', async () => {
+    fetchMock.mockResponseOnce(JSON.stringify(data));
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+
+    };
+    const client = new ToggledClient(config);
+    await client.start();
+    const value = client.getValue('missingToggle');
+    client.stop();
+    expect(value).toBe(undefined);
+});
 
 test('Should handle error and return false for isEnabled', async () => {
     jest.spyOn(global.console, 'error').mockImplementation(() => jest.fn());
@@ -136,7 +124,6 @@ test('Should handle error and return false for isEnabled', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         storageProvider,
     };
     const client = new ToggledClient(config);
@@ -168,13 +155,12 @@ test('Should read session id from localStorage', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         storageProvider,
     };
     const client = new ToggledClient(config);
     await client.start();
-    const context = client.getContext();
-    expect(context.sessionId).toBe(sessionId);
+    const currentSessionId = client.getCurrentSessionId();
+    expect(currentSessionId).toBe(sessionId);
 });
 
 test('Should read toggles from localStorage', async () => {
@@ -184,7 +170,7 @@ test('Should read toggles from localStorage', async () => {
             toggleName: 'featureToggleBackup',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
     fetchMock.mockReject();
@@ -207,7 +193,6 @@ test('Should read toggles from localStorage', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         storageProvider,
     };
     const client = new ToggledClient(config);
@@ -219,18 +204,18 @@ test('Should read toggles from localStorage', async () => {
 test('Should bootstrap data when bootstrap is provided', async () => {
     localStorage.clear();
     const storeKey = 'toggled:repository:repo';
-    const bootstrap:IToggle[] = [
+    const bootstrap: IToggle[] = [
         {
             toggleName: 'toggles',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'algo',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
     const initialData = [
@@ -238,13 +223,13 @@ test('Should bootstrap data when bootstrap is provided', async () => {
             toggleName: 'initialData',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'test initial',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
 
@@ -254,7 +239,6 @@ test('Should bootstrap data when bootstrap is provided', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         bootstrap,
     };
     const client = new ToggledClient(config);
@@ -267,18 +251,18 @@ test('Should bootstrap data when bootstrap is provided', async () => {
 test('Should set internal toggle state when bootstrap is set, before client is started', async () => {
     localStorage.clear();
     const storeKey = 'toggled:repository:repo';
-    const bootstrap:IToggle[] = [
+    const bootstrap: IToggle[] = [
         {
             toggleName: 'toggles',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'algo',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
     const initialData = [
@@ -286,13 +270,13 @@ test('Should set internal toggle state when bootstrap is set, before client is s
             toggleName: 'initialData',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'test initial',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
 
@@ -302,7 +286,6 @@ test('Should set internal toggle state when bootstrap is set, before client is s
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         bootstrap,
     };
     const client = new ToggledClient(config);
@@ -314,18 +297,18 @@ test('Should set internal toggle state when bootstrap is set, before client is s
 test('Should not bootstrap data when bootstrapOverride is false and localStorage is not empty', async () => {
     localStorage.clear();
     const storeKey = 'toggled:repository:repo';
-    const bootstrap:IToggle[] = [
+    const bootstrap: IToggle[] = [
         {
             toggleName: 'toggles',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'algo',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
     const initialData = [
@@ -333,13 +316,13 @@ test('Should not bootstrap data when bootstrapOverride is false and localStorage
             toggleName: 'initialData',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'test initial',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
 
@@ -349,7 +332,6 @@ test('Should not bootstrap data when bootstrapOverride is false and localStorage
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         bootstrap,
         bootstrapOverride: false,
     };
@@ -363,18 +345,18 @@ test('Should not bootstrap data when bootstrapOverride is false and localStorage
 test('Should bootstrap when bootstrapOverride is false and local storage is empty', async () => {
     localStorage.clear();
     const storeKey = 'toggled:repository:repo';
-    const bootstrap:IToggle[] = [
+    const bootstrap: IToggle[] = [
         {
             toggleName: 'toggles',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'algo',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
 
@@ -384,7 +366,6 @@ test('Should bootstrap when bootstrapOverride is false and local storage is empt
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         bootstrap,
         bootstrapOverride: false,
     };
@@ -403,13 +384,13 @@ test('Should not bootstrap data when bootstrap is []', async () => {
             toggleName: 'initialData',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'test initial',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
 
@@ -419,7 +400,6 @@ test('Should not bootstrap data when bootstrap is []', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         bootstrap: [],
         bootstrapOverride: true,
     };
@@ -432,25 +412,24 @@ test('Should not bootstrap data when bootstrap is []', async () => {
 
 test('Should publish ready event when bootstrap is provided, before client is started', async () => {
     localStorage.clear();
-    const bootstrap:IToggle[] = [
+    const bootstrap: IToggle[] = [
         {
             toggleName: 'toggles',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
         {
             toggleName: 'algo',
             toggleStatus: TOGGLES_STATUS.ON,
             toggleValue: true,
-            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
         },
     ];
 
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         bootstrap,
     };
     const client = new ToggledClient(config);
@@ -465,7 +444,6 @@ test('Should publish ready when initial fetch completed', (done) => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     client.start();
@@ -497,7 +475,6 @@ test('Should publish error when initial init fails', (done) => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         storageProvider,
     };
     const client = new ToggledClient(config);
@@ -517,7 +494,6 @@ test('Should publish error when fetch fails', (done) => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     client.start();
@@ -537,7 +513,6 @@ test.each([400, 401, 403, 404, 429, 500, 502, 503])(
         const config: IConfig = {
             url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
-            appName: 'web',
         };
         const client = new ToggledClient(config);
         client.on(EVENTS.ERROR, (e: any) => {
@@ -557,7 +532,6 @@ test('Should publish update when state changes after refreshInterval', async () 
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
-        appName: 'web',
     };
     const client = new ToggledClient(config);
 
@@ -585,7 +559,6 @@ test(`If refresh is disabled should not fetch`, async () => {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     await client.start();
@@ -603,7 +576,6 @@ test('Should include etag in second request', async () => {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
-        appName: 'web',
     };
     const client = new ToggledClient(config);
 
@@ -630,7 +602,6 @@ test('Should add clientKey as Authorization header', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: 'some123key',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     await client.start();
@@ -644,19 +615,9 @@ test('Should add clientKey as Authorization header', async () => {
     });
 });
 
-test('Should require appName', () => {
-    expect(() => {
-        new ToggledClient({
-            url: TOGGLED_PLATFORM_URLS.TEST,
-            clientKey: '12',
-            appName: '',
-        });
-    }).toThrow();
-});
-
 test('Should require url', () => {
     expect(() => {
-        new ToggledClient({ url: '', clientKey: '12', appName: 'web' });
+        new ToggledClient({ url: '', clientKey: '12' });
     }).toThrow();
 });
 
@@ -665,7 +626,6 @@ test('Should require valid url', () => {
         new ToggledClient({
             url: 'not-a-url',
             clientKey: '12',
-            appName: 'web',
         });
     }).toThrow();
 });
@@ -675,7 +635,6 @@ test('Should require valid clientKey', () => {
         new ToggledClient({
             url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '',
-            appName: 'web',
         });
     }).toThrow();
 });
@@ -690,7 +649,6 @@ test('Should stop fetching when stop is called', async () => {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
         refreshInterval: 1,
-        appName: 'web',
     };
     const client = new ToggledClient(config);
 
@@ -712,20 +670,18 @@ test('Should include context fields on request', async () => {
         [JSON.stringify(data), { status: 200 }],
         [JSON.stringify(data), { status: 304 }]
     );
-    const context: IMutableContext = {
+    const context: IContext = {
         userId: '123',
         sessionId: '456',
         remoteAddress: 'address',
-        properties: {
-            property1: 'property1',
-            property2: 'property2',
-        },
+        appName: 'web',
+        environment: 'prod',
+        property1: 'property1',
+        property2: 'property2',
     };
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
         context,
     };
     const client = new ToggledClient(config);
@@ -739,8 +695,8 @@ test('Should include context fields on request', async () => {
     expect(url.searchParams.get('userId')).toEqual('123');
     expect(url.searchParams.get('sessionId')).toEqual('456');
     expect(url.searchParams.get('remoteAddress')).toEqual('address');
-    expect(url.searchParams.get('properties[property1]')).toEqual('property1');
-    expect(url.searchParams.get('properties[property2]')).toEqual('property2');
+    expect(url.searchParams.get('property1')).toEqual('property1');
+    expect(url.searchParams.get('property2')).toEqual('property2');
     expect(url.searchParams.get('appName')).toEqual('web');
     expect(url.searchParams.get('environment')).toEqual('prod');
 });
@@ -750,20 +706,14 @@ test('Should note include context fields with "null" value', async () => {
         [JSON.stringify(data), { status: 200 }],
         [JSON.stringify(data), { status: 304 }]
     );
-    const context: IMutableContext = {
-        userId: undefined,
+    const context: IContext = {
         sessionId: '0',
-        remoteAddress: undefined,
-        properties: {
-            property1: 'property1',
-            property2: 'property2',
-        },
+        property1: 'property1',
+        property2: 'property2',
     };
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
         context,
     };
     const client = new ToggledClient(config);
@@ -788,18 +738,16 @@ test('Should update context fields with await', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
     };
     const client = new ToggledClient(config);
     await client.updateContext({
         userId: '123',
         sessionId: '456',
         remoteAddress: 'address',
-        properties: {
-            property1: 'property1',
-            property2: 'property2',
-        },
+        appName: 'web',
+        environment: 'prod',
+        property1: 'property1',
+        property2: 'property2',
     });
 
     await client.start();
@@ -811,8 +759,8 @@ test('Should update context fields with await', async () => {
     expect(url.searchParams.get('userId')).toEqual('123');
     expect(url.searchParams.get('sessionId')).toEqual('456');
     expect(url.searchParams.get('remoteAddress')).toEqual('address');
-    expect(url.searchParams.get('properties[property1]')).toEqual('property1');
-    expect(url.searchParams.get('properties[property2]')).toEqual('property2');
+    expect(url.searchParams.get('property1')).toEqual('property1');
+    expect(url.searchParams.get('property2')).toEqual('property2');
     expect(url.searchParams.get('appName')).toEqual('web');
     expect(url.searchParams.get('environment')).toEqual('prod');
 });
@@ -825,18 +773,16 @@ test('Should update context fields on request', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
     };
     const client = new ToggledClient(config);
     client.updateContext({
         userId: '123',
         sessionId: '456',
         remoteAddress: 'address',
-        properties: {
-            property1: 'property1',
-            property2: 'property2',
-        },
+        appName: 'web',
+        environment: 'prod',
+        property1: 'property1',
+        property2: 'property2',
     });
 
     await client.start();
@@ -848,8 +794,8 @@ test('Should update context fields on request', async () => {
     expect(url.searchParams.get('userId')).toEqual('123');
     expect(url.searchParams.get('sessionId')).toEqual('456');
     expect(url.searchParams.get('remoteAddress')).toEqual('address');
-    expect(url.searchParams.get('properties[property1]')).toEqual('property1');
-    expect(url.searchParams.get('properties[property2]')).toEqual('property2');
+    expect(url.searchParams.get('property1')).toEqual('property1');
+    expect(url.searchParams.get('property2')).toEqual('property2');
     expect(url.searchParams.get('appName')).toEqual('web');
     expect(url.searchParams.get('environment')).toEqual('prod');
 });
@@ -862,8 +808,6 @@ test('Updating context should wait on asynchronous start', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
     };
     const client = new ToggledClient(config);
 
@@ -875,38 +819,6 @@ test('Updating context should wait on asynchronous start', async () => {
     expect(fetchMock).toBeCalledTimes(2);
 });
 
-test('Should not replace sessionId when updating context', async () => {
-    fetchMock.mockResponses(
-        [JSON.stringify(data), { status: 200 }],
-        [JSON.stringify(data), { status: 304 }]
-    );
-    const config: IConfig = {
-        url: TOGGLED_PLATFORM_URLS.TEST,
-        clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
-    };
-    const client = new ToggledClient(config);
-    await client.start();
-    const context = client.getContext();
-    await client.updateContext({
-        userId: '123',
-        remoteAddress: 'address',
-        properties: {
-            property1: 'property1',
-            property2: 'property2',
-        },
-    });
-
-    jest.advanceTimersByTime(1001);
-
-    const url = new URL(getTypeSafeRequestUrl(fetchMock));
-
-    expect(url.searchParams.get('sessionId')).toEqual(
-        context.sessionId?.toString()
-    );
-});
-
 test('Should not add property fields when properties is an empty object', async () => {
     fetchMock.mockResponses(
         [JSON.stringify(data), { status: 200 }],
@@ -915,11 +827,7 @@ test('Should not add property fields when properties is an empty object', async 
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
-        environment: 'prod',
-        context: {
-            properties: {},
-        },
+        context: {},
     };
     const client = new ToggledClient(config);
 
@@ -929,31 +837,7 @@ test('Should not add property fields when properties is an empty object', async 
 
     const url = new URL(getTypeSafeRequestUrl(fetchMock));
 
-    // console.log(url.toString(), url.searchParams.toString(), url.searchParams.get('properties'));
-
-    expect(url.searchParams.get('appName')).toEqual('web');
-    expect(url.searchParams.get('environment')).toEqual('prod');
     expect(url.searchParams.get('properties')).toBeNull();
-});
-
-test('Should use default environment', async () => {
-    fetchMock.mockResponses(
-        [JSON.stringify(data), { status: 200 }],
-        [JSON.stringify(data), { status: 200 }]
-    );
-    const config: IConfig = {
-        url: TOGGLED_PLATFORM_URLS.TEST,
-        clientKey: '12',
-        appName: 'web',
-    };
-    const client = new ToggledClient(config);
-    await client.start();
-
-    jest.advanceTimersByTime(1001);
-
-    const url = new URL(getTypeSafeRequestUrl(fetchMock));
-
-    expect(url.searchParams.get('environment')).toEqual('default');
 });
 
 test('Should setContextField with userId', async () => {
@@ -961,7 +845,6 @@ test('Should setContextField with userId', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     client.setContextField('userId', userId);
@@ -974,7 +857,6 @@ test('Should setContextField with sessionId', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     client.setContextField('sessionId', sessionId);
@@ -987,7 +869,6 @@ test('Should setContextField with remoteAddress', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     client.setContextField('remoteAddress', remoteAddress);
@@ -1000,30 +881,26 @@ test('Should setContextField with custom property', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     client.setContextField('clientId', clientId);
     const context = client.getContext();
-    expect(context.properties?.clientId).toBe(clientId);
+    expect(context.clientId).toBe(clientId);
 });
 
 test('Should setContextField with custom property and keep existing props', async () => {
     const clientId = 'some-client-id-443';
-    const initialContext = { properties: { someField: '123' } };
+    const initialContext = { someField: '123' };
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         context: initialContext,
     };
     const client = new ToggledClient(config);
     client.setContextField('clientId', clientId);
     const context = client.getContext();
-    expect(context.properties?.clientId).toBe(clientId);
-    expect(context.properties?.someField).toBe(
-        initialContext.properties.someField
-    );
+    expect(context.clientId).toBe(clientId);
+    expect(context.someField).toBe(initialContext.someField);
 });
 
 test('Should override userId via setContextField', async () => {
@@ -1031,7 +908,6 @@ test('Should override userId via setContextField', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         context: { userId: 'old' },
     };
     const client = new ToggledClient(config);
@@ -1040,12 +916,61 @@ test('Should override userId via setContextField', async () => {
     expect(context.userId).toBe(userId);
 });
 
+test('Should store new sessionId', async () => {
+    fetchMock.mockResponse(JSON.stringify(data));
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+    };
+    const client = new ToggledClient(config);
+    await client.start();
+    const sessionId = client.getCurrentSessionId();
+    expect(sessionId).toBe('abcdefghijklmnopqrstvwxyz');
+    client.stop();
+});
+
+test('Should pass sessionId from localStorage in header', async () => {
+    const sessionId = '123';
+    fetchMock.mockReject();
+
+    class Store implements IStorageProvider {
+        public async save() {
+            return Promise.resolve();
+        }
+
+        public async get(name: string) {
+            if (name === 'sessionId') {
+                return sessionId;
+            } else {
+                return Promise.resolve([]);
+            }
+        }
+    }
+
+    const storageProvider = new Store();
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+        storageProvider,
+    };
+    const client = new ToggledClient(config);
+
+    await client.start();
+    jest.advanceTimersByTime(1001);
+
+    const featureRequest = getTypeSafeRequest(fetchMock, 0);
+    client.stop();
+
+    expect(featureRequest.headers).toMatchObject({
+        'session-id': sessionId,
+    });
+});
+
 test('Initializing client twice should show a console warning', async () => {
     console.error = jest.fn();
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         context: { userId: 'old' },
     };
     const client = new ToggledClient(config);
@@ -1062,7 +987,6 @@ test('Should pass under custom header clientKey', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         headerName: 'NotAuthorization',
     };
     const client = new ToggledClient(config);
@@ -1100,7 +1024,7 @@ test('Should pass under custom header clientKey', async () => {
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         bootstrap,
 //     };
 //     const client = new ToggledClient(config);
@@ -1119,46 +1043,44 @@ test('Should pass under custom header clientKey', async () => {
 //     });
 // });
 
-// Metrics are not currently supported
+test('Should pass custom headers', async () => {
+    fetchMock.mockResponses(
+        [JSON.stringify(data), { status: 200 }],
+        [JSON.stringify(data), { status: 200 }]
+    );
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: 'extrakey',
+        customHeaders: {
+            customheader1: 'header1val',
+            customheader2: 'header2val',
+        },
+    };
+    const client = new ToggledClient(config);
+    await client.start();
+    jest.advanceTimersByTime(1001);
 
-// test('Should pass custom headers', async () => {
-//     fetchMock.mockResponses(
-//         [JSON.stringify(data), { status: 200 }],
-//         [JSON.stringify(data), { status: 200 }]
-//     );
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: 'extrakey',
-//         appName: 'web',
-//         customHeaders: {
-//             customheader1: 'header1val',
-//             customheader2: 'header2val',
-//         },
-//     };
-//     const client = new ToggledClient(config);
-//     await client.start();
-//     jest.advanceTimersByTime(1001);
+    const featureRequest = getTypeSafeRequest(fetchMock, 0);
+    client.stop();
 
-//     const featureRequest = getTypeSafeRequest(fetchMock, 0);
+    expect(featureRequest.headers).toMatchObject({
+        customheader1: 'header1val',
+        customheader2: 'header2val',
+    });
+    
+    // Metrics are not currently supported
+    // client.isEnabled('count-metrics');
+    // jest.advanceTimersByTime(2001);
 
-//     expect(featureRequest.headers).toMatchObject({
-//         customheader1: 'header1val',
-//         customheader2: 'header2val',
-//     });
+    // const metricsRequest = getTypeSafeRequest(fetchMock, 1);
 
-//     client.isEnabled('count-metrics');
-//     jest.advanceTimersByTime(2001);
-
-//     const metricsRequest = getTypeSafeRequest(fetchMock, 1);
-
-//     expect(metricsRequest.headers).toMatchObject({
-//         customheader1: 'header1val',
-//         customheader2: 'header2val',
-//     });
-// });
+    // expect(metricsRequest.headers).toMatchObject({
+    //     customheader1: 'header1val',
+    //     customheader2: 'header2val',
+    // });
+});
 
 // Impression events are not currently supported
-
 // test('Should emit impression events on getVariant calls when impressionData is true', (done) => {
 //     const bootstrap = [
 //         {
@@ -1175,7 +1097,7 @@ test('Should pass under custom header clientKey', async () => {
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         bootstrap,
 //     };
 //     const client = new ToggledClient(config);
@@ -1211,7 +1133,7 @@ test('Should pass under custom header clientKey', async () => {
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         bootstrap,
 //     };
 //     const client = new ToggledClient(config);
@@ -1246,7 +1168,7 @@ test('Should pass under custom header clientKey', async () => {
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         bootstrap,
 //         impressionDataAll: true,
 //     };
@@ -1288,7 +1210,7 @@ test('Should pass under custom header clientKey', async () => {
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         bootstrap,
 //         impressionDataAll: true,
 //     };
@@ -1326,7 +1248,7 @@ test('Should pass under custom header clientKey', async () => {
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         bootstrap,
 //         impressionDataAll: true,
 //     };
@@ -1357,7 +1279,6 @@ test('Should publish ready only when the first fetch was successful', async () =
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         refreshInterval: 1,
     };
     const client = new ToggledClient(config);
@@ -1384,7 +1305,6 @@ test('Should be able to configure ToggledClient with a URL instance', () => {
     const config: IConfig = {
         url,
         clientKey: '12',
-        appName: 'web',
     };
     const client = new ToggledClient(config);
     expect(client).toHaveProperty('url', url);
@@ -1395,7 +1315,6 @@ test("Should update toggles even when refresh interval is set to '0'", async () 
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-        appName: 'web',
         refreshInterval: 0,
     };
     const client = new ToggledClient(config);
@@ -1413,7 +1332,6 @@ test.each([null, undefined])(
         const config: IConfig = {
             url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
-            appName: 'web',
         };
         const client = new ToggledClient(config);
         await client.start();
@@ -1446,7 +1364,7 @@ test.each([null, undefined])(
 //     const config: IConfig = {
 //         url: TOGGLED_PLATFORM_URLS.TEST,
 //         clientKey: '12',
-//         appName: 'web',
+//
 //         fetch: async () => {
 //             return {
 //                 ok: true,
@@ -1470,7 +1388,7 @@ test.each([null, undefined])(
 //         });
 //     });
 //     expect(data).toMatchObject({
-//         appName: 'web',
+//
 //         bucket: {
 //             toggles: {
 //                 'non-existent-toggle': {
@@ -1490,7 +1408,6 @@ test('Should require disabled metrics', () => {
         new ToggledClient({
             url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
-            appName: 'web',
             disableMetrics: false,
         });
     }).toThrow();
@@ -1501,7 +1418,6 @@ test('Should require GET requests', () => {
         new ToggledClient({
             url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
-            appName: 'web',
             usePOSTrequests: true,
         });
     }).toThrow();

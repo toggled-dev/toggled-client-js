@@ -6,25 +6,11 @@ import LocalStorageProvider from './storage-provider-local';
 import EventsHandler from './events-handler';
 import { notNullOrUndefined, urlWithContextAsQuery } from './util';
 
-const DEFINED_FIELDS = ['userId', 'sessionId', 'remoteAddress'];
+type IContext = {
+    [key: string]: string | undefined;
+};
 
-interface IStaticContext {
-    appName: string;
-    environment?: string;
-}
-
-interface IMutableContext {
-    userId?: string;
-    sessionId?: string;
-    remoteAddress?: string;
-    properties?: {
-        [key: string]: string;
-    };
-}
-
-type IContext = IStaticContext & IMutableContext;
-
-interface IConfig extends IStaticContext {
+interface IConfig {
     url: URL | string | TOGGLED_PLATFORM_URLS;
     clientKey: string;
     disableRefresh?: boolean;
@@ -32,7 +18,7 @@ interface IConfig extends IStaticContext {
     metricsInterval?: number;
     disableMetrics?: boolean;
     storageProvider?: IStorageProvider;
-    context?: IMutableContext;
+    context?: IContext;
     fetch?: any;
     bootstrap?: IToggle[];
     bootstrapOverride?: boolean;
@@ -41,15 +27,6 @@ interface IConfig extends IStaticContext {
     impressionDataAll?: boolean;
     usePOSTrequests?: boolean;
 }
-
-// interface IVariant {
-//     name: string;
-//     enabled: boolean;
-//     payload?: {
-//         type: string;
-//         value: string;
-//     };
-// }
 
 interface IToggle {
     toggleName: string;
@@ -69,28 +46,27 @@ export const EVENTS = {
 
 export enum TOGGLES_VALUE_TYPES {
     STRING = 'string',
-    BOOLEAN = 'boolean'
+    BOOLEAN = 'boolean',
 }
 
 export enum TOGGLES_STATUS {
     ON = 'on',
-    OFF = 'off'
+    OFF = 'off',
 }
 
 export enum TOGGLED_PLATFORM_URLS {
     USE1 = 'https://us-east-1-api.saas.toggled.dev/client/features',
     EUC1 = 'https://eu-central-1-api.saas.toggled.dev/client/features',
     APS1 = 'https://ap-south-1-api.saas.toggled.dev/client/features',
-    DEVELOP = 'https://develop-api.lab.toggled.dev/client/features',
+
     TEST = 'http://localhost/test',
 }
 
-const IMPRESSION_EVENTS = {
-    IS_ENABLED: 'isEnabled',
-    GET_VARIANT: 'getVariant',
-};
+// const IMPRESSION_EVENTS = {
+//     IS_ENABLED: 'isEnabled',
+//     GET_VARIANT: 'getVariant',
+// };
 
-//const defaultVariant: IVariant = { name: 'disabled', enabled: false };
 const storeKey = 'repo';
 
 export const resolveFetch = () => {
@@ -116,6 +92,7 @@ export class ToggledClient extends TinyEmitter {
     private refreshInterval: number;
     private url: URL;
     private clientKey: string;
+    private sessionId?: string;
     private etag = '';
     private metrics: Metrics;
     private ready: Promise<void>;
@@ -137,8 +114,6 @@ export class ToggledClient extends TinyEmitter {
         refreshInterval = 30,
         metricsInterval = 30,
         disableMetrics = true,
-        appName,
-        environment = 'default',
         context,
         fetch = resolveFetch(),
         bootstrap,
@@ -155,9 +130,6 @@ export class ToggledClient extends TinyEmitter {
         }
         if (!clientKey) {
             throw new Error('clientKey is required');
-        }
-        if (!appName) {
-            throw new Error('appName is required.');
         }
         if (!disableMetrics) {
             throw new Error('metrics are not currently supported.');
@@ -178,7 +150,7 @@ export class ToggledClient extends TinyEmitter {
                 ? new LocalStorageProvider()
                 : new InMemoryStorageProvider());
         this.refreshInterval = disableRefresh ? 0 : refreshInterval * 1000;
-        this.context = { appName, environment, ...context };
+        this.context = { ...context };
         this.usePOSTrequests = usePOSTrequests;
         this.ready = new Promise((resolve) => {
             this.init()
@@ -204,7 +176,7 @@ export class ToggledClient extends TinyEmitter {
         this.metrics = new Metrics({
             onError: this.emit.bind(this, EVENTS.ERROR),
             onSent: this.emit.bind(this, EVENTS.SENT),
-            appName,
+            appName: 'metrics', //TODO REMOVE THIS
             metricsInterval,
             disableMetrics,
             url: this.url,
@@ -221,9 +193,14 @@ export class ToggledClient extends TinyEmitter {
 
     public isEnabled(toggleName: string): boolean {
         const toggle = this.toggles.find((t) => t.toggleName === toggleName);
-        const enabled = toggle ? toggle.toggleStatus === TOGGLES_STATUS.ON : false;
-        this.metrics.count(toggleName, enabled);
+        const enabled = toggle
+            ? toggle.toggleStatus === TOGGLES_STATUS.ON &&
+              (toggle.toggleValueType === TOGGLES_VALUE_TYPES.BOOLEAN
+                  ? Boolean(toggle.toggleValue)
+                  : true)
+            : false;
 
+        // this.metrics.count(toggleName, enabled);
         // if (toggle?.impressionData || this.impressionDataAll) {
         //     const event = this.eventsHandler.createImpressionEvent(
         //         this.context,
@@ -238,43 +215,32 @@ export class ToggledClient extends TinyEmitter {
         return enabled;
     }
 
-    // public getVariant(toggleName: string): IVariant {
-    //     const toggle = this.toggles.find((t) => t.name === toggleName);
-    //     const enabled = toggle?.enabled || false;
-    //     const variant = toggle ? toggle.variant : defaultVariant;
+    public getValue(toggleName: string): boolean | string | undefined {
+        const toggle = this.toggles.find((t) => t.toggleName === toggleName);
+        
+        const variant = toggle ? toggle.toggleValue : undefined;
 
-    //     if (variant.name) {
-    //         this.metrics.countVariant(toggleName, variant.name);
-    //     }
-    //     this.metrics.count(toggleName, enabled);
-    //     if (toggle?.impressionData || this.impressionDataAll) {
-    //         const event = this.eventsHandler.createImpressionEvent(
-    //             this.context,
-    //             enabled,
-    //             toggleName,
-    //             IMPRESSION_EVENTS.GET_VARIANT,
-    //             toggle?.impressionData ?? undefined,
-    //             variant.name
-    //         );
-    //         this.emit(EVENTS.IMPRESSION, event);
-    //     }
-    //     return variant;
-    // }
+        // const enabled = toggle?.enabled || false;
+        // if (variant.name) {
+        //     this.metrics.countVariant(toggleName, variant.name);
+        // }
+        // this.metrics.count(toggleName, enabled);
+        // if (toggle?.impressionData || this.impressionDataAll) {
+        //     const event = this.eventsHandler.createImpressionEvent(
+        //         this.context,
+        //         enabled,
+        //         toggleName,
+        //         IMPRESSION_EVENTS.GET_VARIANT,
+        //         toggle?.impressionData ?? undefined,
+        //         variant.name
+        //     );
+        //     this.emit(EVENTS.IMPRESSION, event);
+        // }
+        return variant;
+    }
 
-    public async updateContext(context: IMutableContext): Promise<void> {
-        // @ts-expect-error Give the user a nicer error message when
-        // including static fields in the mutable context object
-        if (context.appName || context.environment) {
-            console.warn(
-                "appName and environment are static. They can't be updated with updateContext."
-            );
-        }
-        const staticContext = {
-            environment: this.context.environment,
-            appName: this.context.appName,
-            sessionId: this.context.sessionId,
-        };
-        this.context = { ...staticContext, ...context };
+    public async updateContext(context: IContext): Promise<void> {
+        this.context = { ...context };
 
         if (this.timerRef || this.readyEventEmitted) {
             await this.fetchToggles();
@@ -296,21 +262,18 @@ export class ToggledClient extends TinyEmitter {
     }
 
     public setContextField(field: string, value: string) {
-        if (DEFINED_FIELDS.includes(field)) {
-            this.context = { ...this.context, [field]: value };
-        } else {
-            const properties = { ...this.context.properties, [field]: value };
-            this.context = { ...this.context, properties };
-        }
+        this.context = { ...this.context, [field]: value };
         if (this.timerRef) {
             this.fetchToggles();
         }
     }
 
-    private async init(): Promise<void> {
-        const sessionId = await this.resolveSessionId();
-        this.context = { sessionId, ...this.context };
+    public getCurrentSessionId() {
+        return this.sessionId;
+    }
 
+    private async init(): Promise<void> {
+        this.sessionId = await this.resolveSessionId();
         this.toggles = (await this.storage.get(storeKey)) || [];
 
         if (
@@ -352,16 +315,7 @@ export class ToggledClient extends TinyEmitter {
     }
 
     private async resolveSessionId(): Promise<string> {
-        if (this.context.sessionId) {
-            return this.context.sessionId;
-        } else {
-            let sessionId = await this.storage.get('sessionId');
-            if (!sessionId) {
-                sessionId = Math.floor(Math.random() * 1_000_000_000);
-                await this.storage.save('sessionId', sessionId);
-            }
-            return sessionId;
-        }
+        return await this.storage.get('sessionId');
     }
 
     private getHeaders() {
@@ -374,6 +328,9 @@ export class ToggledClient extends TinyEmitter {
         Object.entries(this.customHeaders)
             .filter(notNullOrUndefined)
             .forEach(([name, value]) => (headers[name] = value));
+        if (this.sessionId) {
+            headers['session-id'] = this.sessionId;
+        }
         return headers;
     }
 
@@ -407,6 +364,9 @@ export class ToggledClient extends TinyEmitter {
                     const data = await response.json();
                     await this.storeToggles(data.items);
 
+                    this.sessionId = data['session-id'];
+                    await this.storage.save('sessionId', this.sessionId);
+
                     if (!this.bootstrap && !this.readyEventEmitted) {
                         this.emit(EVENTS.READY);
                         this.readyEventEmitted = true;
@@ -431,5 +391,4 @@ export class ToggledClient extends TinyEmitter {
 // export storage providers from root module
 export { IStorageProvider, LocalStorageProvider, InMemoryStorageProvider };
 
-//export type { IConfig, IContext, IMutableContext, IVariant, IToggle };
-export type { IConfig, IContext, IMutableContext, IToggle };
+export type { IConfig, IContext, IToggle };

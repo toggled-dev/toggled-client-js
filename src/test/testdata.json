@@ -1,9 +1,9 @@
 {
   "items": [
     {
-      "toggleName": "variantToggle",
-      "toggleValue": true,
-      "toggleValueType": "boolean",
+      "toggleName": "stringToggle",
+      "toggleValue": "some-text",
+      "toggleValueType": "string",
       "toggleStatus": "on"
     },
     {
@@ -18,5 +18,6 @@
       "toggleValueType": "boolean",
       "toggleStatus": "on"
     }
-  ]
+  ],
+  "session-id": "abcdefghijklmnopqrstvwxyz"
 }
