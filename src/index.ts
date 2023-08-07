@@ -137,6 +137,9 @@ export class ToggledClient extends TinyEmitter {
         if (usePOSTrequests) {
             throw new Error('POST requests are not currently supported.');
         }
+        if (headerName !== 'x-api-key') {
+            throw new Error('A different header name for client api key is not currently supported.');
+        }
         this.eventsHandler = new EventsHandler();
         this.impressionDataAll = impressionDataAll;
         this.toggles = bootstrap && bootstrap.length > 0 ? bootstrap : [];
@@ -261,7 +264,7 @@ export class ToggledClient extends TinyEmitter {
         return { ...this.context };
     }
 
-    public setContextField(field: string, value: string) {
+    public setContextParameter(field: string, value: string) {
         this.context = { ...this.context, [field]: value };
         if (this.timerRef) {
             this.fetchToggles();

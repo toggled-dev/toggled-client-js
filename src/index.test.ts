@@ -840,55 +840,55 @@ test('Should not add property fields when properties is an empty object', async 
     expect(url.searchParams.get('properties')).toBeNull();
 });
 
-test('Should setContextField with userId', async () => {
+test('Should setContextParameter with userId', async () => {
     const userId = 'some-id-123';
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
     };
     const client = new ToggledClient(config);
-    client.setContextField('userId', userId);
+    client.setContextParameter('userId', userId);
     const context = client.getContext();
     expect(context.userId).toBe(userId);
 });
 
-test('Should setContextField with sessionId', async () => {
+test('Should setContextParameter with sessionId', async () => {
     const sessionId = 'some-session-id-123';
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
     };
     const client = new ToggledClient(config);
-    client.setContextField('sessionId', sessionId);
+    client.setContextParameter('sessionId', sessionId);
     const context = client.getContext();
     expect(context.sessionId).toBe(sessionId);
 });
 
-test('Should setContextField with remoteAddress', async () => {
+test('Should setContextParameter with remoteAddress', async () => {
     const remoteAddress = '10.0.0.1';
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
     };
     const client = new ToggledClient(config);
-    client.setContextField('remoteAddress', remoteAddress);
+    client.setContextParameter('remoteAddress', remoteAddress);
     const context = client.getContext();
     expect(context.remoteAddress).toBe(remoteAddress);
 });
 
-test('Should setContextField with custom property', async () => {
+test('Should setContextParameter with custom property', async () => {
     const clientId = 'some-client-id-443';
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
     };
     const client = new ToggledClient(config);
-    client.setContextField('clientId', clientId);
+    client.setContextParameter('clientId', clientId);
     const context = client.getContext();
     expect(context.clientId).toBe(clientId);
 });
 
-test('Should setContextField with custom property and keep existing props', async () => {
+test('Should setContextParameter with custom property and keep existing props', async () => {
     const clientId = 'some-client-id-443';
     const initialContext = { someField: '123' };
     const config: IConfig = {
@@ -897,13 +897,13 @@ test('Should setContextField with custom property and keep existing props', asyn
         context: initialContext,
     };
     const client = new ToggledClient(config);
-    client.setContextField('clientId', clientId);
+    client.setContextParameter('clientId', clientId);
     const context = client.getContext();
     expect(context.clientId).toBe(clientId);
     expect(context.someField).toBe(initialContext.someField);
 });
 
-test('Should override userId via setContextField', async () => {
+test('Should override userId via setContextParameter', async () => {
     const userId = 'some-user-id-552';
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
@@ -911,7 +911,7 @@ test('Should override userId via setContextField', async () => {
         context: { userId: 'old' },
     };
     const client = new ToggledClient(config);
-    client.setContextField('userId', userId);
+    client.setContextParameter('userId', userId);
     const context = client.getContext();
     expect(context.userId).toBe(userId);
 });
@@ -981,30 +981,30 @@ test('Initializing client twice should show a console warning', async () => {
     expect(console.error).toBeCalledTimes(2);
 });
 
-test('Should pass under custom header clientKey', async () => {
-    fetchMock.mockResponseOnce(JSON.stringify(data));
+// test('Should pass under custom header clientKey', async () => {
+//     fetchMock.mockResponseOnce(JSON.stringify(data));
 
-    const config: IConfig = {
-        url: TOGGLED_PLATFORM_URLS.TEST,
-        clientKey: '12',
-        headerName: 'NotAuthorization',
-    };
-    const client = new ToggledClient(config);
+//     const config: IConfig = {
+//         url: TOGGLED_PLATFORM_URLS.TEST,
+//         clientKey: '12',
+//         headerName: 'NotAuthorization',
+//     };
+//     const client = new ToggledClient(config);
 
-    client.on(EVENTS.UPDATE, () => {
-        const request = getTypeSafeRequest(fetchMock, 0);
+//     client.on(EVENTS.UPDATE, () => {
+//         const request = getTypeSafeRequest(fetchMock, 0);
 
-        expect(fetchMock.mock.calls.length).toEqual(1);
-        expect(request.headers).toMatchObject({
-            NotAuthorization: '12',
-        });
-        client.stop();
-    });
+//         expect(fetchMock.mock.calls.length).toEqual(1);
+//         expect(request.headers).toMatchObject({
+//             NotAuthorization: '12',
+//         });
+//         client.stop();
+//     });
 
-    await client.start();
+//     await client.start();
 
-    jest.advanceTimersByTime(999);
-});
+//     jest.advanceTimersByTime(999);
+// });
 
 // Impression events are not currently supported
 
@@ -1419,6 +1419,16 @@ test('Should require GET requests', () => {
             url: TOGGLED_PLATFORM_URLS.TEST,
             clientKey: '12',
             usePOSTrequests: true,
+        });
+    }).toThrow();
+});
+
+test('Should require x-api-key as header name for key', () => {
+    expect(() => {
+        new ToggledClient({
+            url: TOGGLED_PLATFORM_URLS.TEST,
+            clientKey: '12',
+            headerName: 'another-auth-header',
         });
     }).toThrow();
 });
