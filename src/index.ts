@@ -138,7 +138,9 @@ export class ToggledClient extends TinyEmitter {
             throw new Error('POST requests are not currently supported.');
         }
         if (headerName !== 'x-api-key') {
-            throw new Error('A different header name for client api key is not currently supported.');
+            throw new Error(
+                'A different header name for client api key is not currently supported.'
+            );
         }
         this.eventsHandler = new EventsHandler();
         this.impressionDataAll = impressionDataAll;
@@ -220,7 +222,7 @@ export class ToggledClient extends TinyEmitter {
 
     public getValue(toggleName: string): boolean | string | undefined {
         const toggle = this.toggles.find((t) => t.toggleName === toggleName);
-        
+
         const variant = toggle ? toggle.toggleValue : undefined;
 
         // const enabled = toggle?.enabled || false;

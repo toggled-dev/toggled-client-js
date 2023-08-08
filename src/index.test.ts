@@ -97,7 +97,6 @@ test('Should return undefined if not found', async () => {
     const config: IConfig = {
         url: TOGGLED_PLATFORM_URLS.TEST,
         clientKey: '12',
-
     };
     const client = new ToggledClient(config);
     await client.start();
@@ -1067,7 +1066,7 @@ test('Should pass custom headers', async () => {
         customheader1: 'header1val',
         customheader2: 'header2val',
     });
-    
+
     // Metrics are not currently supported
     // client.isEnabled('count-metrics');
     // jest.advanceTimersByTime(2001);
