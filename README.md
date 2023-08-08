@@ -1,6 +1,8 @@
 # Toggled Client for the browser (JS)
 
-The JavaScript client is a tiny Toggled client written in JavaScript without any external dependencies (except from browser APIs). This client stores toggles relevant for the current user in `localStorage` and synchronizes with Toggled (see [Integrate Toggled in your app](https://docs.saas.toggled.dev/docs/getting-started/integrate-toggled)) in the background. Because toggles are stored in the user's browser, the client can use them to bootstrap itself the next time the user visits the same web page.
+[Toggled](https://www.toggled.dev) is a solid, scalable and multi-regional feature toggles management platform.
+
+This JavaScript client is a tiny Toggled client written in JavaScript without any external dependencies (except from browser APIs). This client stores toggles relevant for the current user in `localStorage` and synchronizes with Toggled (see [Integrate Toggled in your app](https://docs.saas.toggled.dev/docs/getting-started/integrate-toggled)) in the background. Because toggles are stored in the user's browser, the client can use them to bootstrap itself the next time the user visits the same web page.
 
 This client expect `fetch` to be available. If you need to support older
 browsers you should probably use the [fetch polyfill](https://github.com/github/fetch). 
