@@ -1,6 +1,6 @@
 # Toggled Client for the browser (JS)
 
-The JavaScript client is a tiny Toggled client written in JavaScript without any external dependencies (except from browser APIs). This client stores toggles relevant for the current user in `localStorage` and synchronizes with Toggled (see [Integrate Toggled in your app](https://docs.saas.toggled.dev/docs/getting-started/integrate-toggled) in the background. Because toggles are stored in the user's browser, the client can use them to bootstrap itself the next time the user visits the same web page.
+The JavaScript client is a tiny Toggled client written in JavaScript without any external dependencies (except from browser APIs). This client stores toggles relevant for the current user in `localStorage` and synchronizes with Toggled (see [Integrate Toggled in your app](https://docs.saas.toggled.dev/docs/getting-started/integrate-toggled)) in the background. Because toggles are stored in the user's browser, the client can use them to bootstrap itself the next time the user visits the same web page.
 
 This client expect `fetch` to be available. If you need to support older
 browsers you should probably use the [fetch polyfill](https://github.com/github/fetch). 
@@ -86,7 +86,7 @@ You can use the `getValue` method to get the value of the feature.
 ```js
 const featureValue = toggled.getValue('string.feature.2');
 if (featureValue === 'blue') {
-    // something with variant blue...
+    // something with blue...
 }
 ```
 
@@ -113,7 +113,7 @@ The Toggled SDK takes the following options:
 | option            | required | default | description                                                                                                                                      |
 |-------------------|----------|---------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | url               | yes | n/a | The Toggled URL to connect to. E.g.: `TOGGLED_PLATFORM_URLS.EUC1`                                                                         |
-| clientKey         | yes | n/a | The client key to be used                                                                                                             | 
+| clientKey         | yes | n/a | The client key to be used. [Create it](https://docs.saas.toggled.dev/docs/getting-started/integrate-toggled#create-the-client-key) in your Toggled project | 
 | refreshInterval   | no | `30` | How often, in seconds, the SDK should check for updated toggle configuration. If set to 0 will disable checking for updates                 |
 | disableRefresh    | no | `false` | If set to true, the client will not check for updated toggle configuration                                                                |
 | metricsInterval   | no | `60` | How often, in seconds, the SDK should send usage metrics back to Toggled                                                           | 
@@ -252,3 +252,7 @@ const toggled = new ToggledClient({
 **NOTES: ⚠️**
 If `bootstrapOverride` is `true` (by default), any local cached data will be overridden with the bootstrap specified.   
 If `bootstrapOverride` is `false` any local cached data will not be overridden unless the local cache is empty.
+
+## Original copyright
+This SDK is developed and licensed under the Apache License, Version 2.0 and it's a porting of the original [SDK project](https://github.com/Unleash/unleash-proxy-client-js) by Bricks Software AS.
+The purpose of this project is to allow developers to easily migrate from a different SDK and take full advantage of the Toggled.dev platform.
