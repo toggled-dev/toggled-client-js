@@ -171,7 +171,7 @@ Examples:
 
 ```typescript
 import SharedPreferences from 'react-native-shared-preferences';
-import { ToggledClient } from '@toggled.dev/toggled-client-js';
+import { ToggledClient, TOGGLED_PLATFORM_URLS } from '@toggled.dev/toggled-client-js';
 
 const toggled = new ToggledClient({
     url: TOGGLED_PLATFORM_URLS.EUC1,
@@ -185,7 +185,7 @@ const toggled = new ToggledClient({
 
 ```typescript
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ToggledClient } from '@toggled.dev/toggled-client-js';
+import { ToggledClient, TOGGLED_PLATFORM_URLS } from '@toggled.dev/toggled-client-js';
 
 const PREFIX = 'toggled:repository';
 
@@ -212,7 +212,7 @@ This SDK can also be used in node.js applications (from v1.4.0). Please note tha
 
 ```js
 import fetch from 'node-fetch';
-import { ToggledClient, InMemoryStorageProvider } from '@toggled.dev/toggled-client-js';
+import { ToggledClient, TOGGLED_PLATFORM_URLS, InMemoryStorageProvider } from '@toggled.dev/toggled-client-js';
 
 const toggled = new ToggledClient({
   url: TOGGLED_PLATFORM_URLS.EUC1,
@@ -237,7 +237,7 @@ Add a `bootstrap` attribute when create a new `ToggledClient`.
 There's also a `bootstrapOverride` attribute which is by default is `true`.
 
 ```js
-import { ToggledClient } from '@toggled.dev/toggled-client-js';
+import { ToggledClient, TOGGLED_PLATFORM_URLS } from '@toggled.dev/toggled-client-js';
 
 const toggled = new ToggledClient({
   url: TOGGLED_PLATFORM_URLS.EUC1,
