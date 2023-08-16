@@ -198,7 +198,9 @@ export class ToggledClient extends TinyEmitter {
 
     public isEnabled(toggleName: string): boolean {
         const toggle = this.toggles.find((t) => t.toggleName === toggleName);
-        const enabled = toggle ? toggle.toggleStatus === TOGGLES_STATUS.ON : false;
+        const enabled = toggle
+            ? toggle.toggleStatus === TOGGLES_STATUS.ON
+            : false;
 
         // this.metrics.count(toggleName, enabled);
         // if (toggle?.impressionData || this.impressionDataAll) {
