@@ -69,6 +69,8 @@ export enum TOGGLED_PLATFORM_URLS {
 
 const storeKey = 'repo';
 
+const clientIdentifier = 'js-v1';
+
 export const resolveFetch = () => {
     try {
         if (typeof window !== 'undefined' && 'fetch' in window) {
@@ -326,6 +328,8 @@ export class ToggledClient extends TinyEmitter {
             Accept: 'application/json',
             'Content-Type': 'application/json',
             'If-None-Match': this.etag,
+            'Toggled-Client-Version': clientIdentifier,
+            'Toggled-Client-Ignore-In-Metrics': 'true',
         };
         Object.entries(this.customHeaders)
             .filter(notNullOrUndefined)
