@@ -329,7 +329,6 @@ export class ToggledClient extends TinyEmitter {
             'Content-Type': 'application/json',
             'If-None-Match': this.etag,
             'Toggled-Client-Version': clientIdentifier,
-            'Toggled-Client-Ignore-In-Metrics': 'true',
         };
         Object.entries(this.customHeaders)
             .filter(notNullOrUndefined)
