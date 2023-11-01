@@ -1,9 +1,8 @@
-import { notNullOrUndefined } from './util';
+import { notNullOrUndefined, clientIdentifier } from './util';
 
 export interface MetricsOptions {
     onError: OnError;
     onSent?: OnSent;
-    appName: string;
     metricsInterval: number;
     disableMetrics?: boolean;
     url: URL | string;
@@ -13,22 +12,16 @@ export interface MetricsOptions {
     customHeaders?: Record<string, string>;
 }
 
-interface VariantBucket {
-    [s: string]: number;
-}
-
 interface Bucket {
     start: Date;
     stop: Date | null;
     toggles: {
-        [s: string]: { yes: number; no: number; variants: VariantBucket };
+        [s: string]: { enable_count: number; disable_count: number };
     };
 }
 
 interface Payload {
     bucket: Bucket;
-    appName: string;
-    instanceId: string;
 }
 
 type OnError = (error: unknown) => void;
@@ -40,7 +33,6 @@ export default class Metrics {
     private onError: OnError;
     private onSent: OnSent;
     private bucket: Bucket;
-    private appName: string;
     private metricsInterval: number;
     private disabled: boolean;
     private url: URL;
@@ -53,7 +45,6 @@ export default class Metrics {
     constructor({
         onError,
         onSent,
-        appName,
         metricsInterval,
         disableMetrics = true,
         url,
@@ -66,7 +57,6 @@ export default class Metrics {
         this.onSent = onSent || doNothing;
         this.disabled = disableMetrics;
         this.metricsInterval = metricsInterval * 1000;
-        this.appName = appName;
         this.url = url instanceof URL ? url : new URL(url);
         this.clientKey = clientKey;
         this.bucket = this.createEmptyBucket();
@@ -112,6 +102,7 @@ export default class Metrics {
             [this.headerName]: this.clientKey,
             Accept: 'application/json',
             'Content-Type': 'application/json',
+            'Toggled-Client-Version': clientIdentifier,
         };
 
         Object.entries(this.customHeaders)
@@ -124,7 +115,7 @@ export default class Metrics {
     public async sendMetrics(): Promise<void> {
         /* istanbul ignore next if */
 
-        const url = `${this.url}/client/metrics`;
+        const url = `${this.url}/usage`;
         const payload = this.getPayload();
 
         if (this.bucketIsEmpty(payload)) {
@@ -150,22 +141,22 @@ export default class Metrics {
             return false;
         }
         this.assertBucket(name);
-        this.bucket.toggles[name][enabled ? 'yes' : 'no']++;
+        this.bucket.toggles[name][enabled ? 'enable_count' : 'disable_count']++;
         return true;
     }
 
-    public countVariant(name: string, variant: string): boolean {
-        if (this.disabled || !this.bucket) {
-            return false;
-        }
-        this.assertBucket(name);
-        if (this.bucket.toggles[name].variants[variant]) {
-            this.bucket.toggles[name].variants[variant] += 1;
-        } else {
-            this.bucket.toggles[name].variants[variant] = 1;
-        }
-        return true;
-    }
+    // public countVariant(name: string, variant: string): boolean {
+    //     if (this.disabled || !this.bucket) {
+    //         return false;
+    //     }
+    //     this.assertBucket(name);
+    //     if (this.bucket.toggles[name].variants[variant]) {
+    //         this.bucket.toggles[name].variants[variant] += 1;
+    //     } else {
+    //         this.bucket.toggles[name].variants[variant] = 1;
+    //     }
+    //     return true;
+    // }
 
     private assertBucket(name: string) {
         if (this.disabled || !this.bucket) {
@@ -173,9 +164,9 @@ export default class Metrics {
         }
         if (!this.bucket.toggles[name]) {
             this.bucket.toggles[name] = {
-                yes: 0,
-                no: 0,
-                variants: {},
+                enable_count: 0,
+                disable_count: 0,
+                //variants: {},
             };
         }
     }
@@ -196,8 +187,6 @@ export default class Metrics {
 
         return {
             bucket,
-            appName: this.appName,
-            instanceId: 'browser',
         };
     }
 }

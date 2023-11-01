@@ -1005,42 +1005,37 @@ test('Initializing client twice should show a console warning', async () => {
 //     jest.advanceTimersByTime(999);
 // });
 
-// Impression events are not currently supported
+test('Should emit impression events on isEnabled calls when impressionData is true', (done) => {
+    const bootstrap = [
+        {
+            toggleName: 'impression',
+            toggleStatus: TOGGLES_STATUS.ON,
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
+            toggleValue: true,
+        },
+    ];
 
-// test('Should emit impression events on isEnabled calls when impressionData is true', (done) => {
-//     const bootstrap = [
-//         {
-//             name: 'impression',
-//             enabled: true,
-//             variant: {
-//                 name: 'disabled',
-//                 enabled: false,
-//             },
-//             impressionData: true,
-//         },
-//     ];
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+        impressionDataAll: true,
+        bootstrap,
+    };
+    const client = new ToggledClient(config);
+    client.start();
 
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//
-//         bootstrap,
-//     };
-//     const client = new ToggledClient(config);
-//     client.start();
+    client.on(EVENTS.READY, () => {
+        const isEnabled = client.isEnabled('impression');
+        expect(isEnabled).toBe(true);
+    });
 
-//     client.on(EVENTS.READY, () => {
-//         const isEnabled = client.isEnabled('impression');
-//         expect(isEnabled).toBe(true);
-//     });
-
-//     client.on(EVENTS.IMPRESSION, (event: any) => {
-//         expect(event.featureName).toBe('impression');
-//         expect(event.eventType).toBe('isEnabled');
-//         client.stop();
-//         done();
-//     });
-// });
+    client.on(EVENTS.IMPRESSION, (event: any) => {
+        expect(event.featureName).toBe('impression');
+        expect(event.eventType).toBe('isEnabled');
+        client.stop();
+        done();
+    });
+});
 
 test('Should pass custom headers', async () => {
     fetchMock.mockResponses(
@@ -1060,96 +1055,87 @@ test('Should pass custom headers', async () => {
     jest.advanceTimersByTime(1001);
 
     const featureRequest = getTypeSafeRequest(fetchMock, 0);
-    client.stop();
 
     expect(featureRequest.headers).toMatchObject({
         customheader1: 'header1val',
         customheader2: 'header2val',
     });
 
-    // Metrics are not currently supported
-    // client.isEnabled('count-metrics');
-    // jest.advanceTimersByTime(2001);
+    client.isEnabled('count-metrics');
+    jest.advanceTimersByTime(2001);
 
-    // const metricsRequest = getTypeSafeRequest(fetchMock, 1);
+    const metricsRequest = getTypeSafeRequest(fetchMock, 1);
 
-    // expect(metricsRequest.headers).toMatchObject({
-    //     customheader1: 'header1val',
-    //     customheader2: 'header2val',
-    // });
+    expect(metricsRequest.headers).toMatchObject({
+        customheader1: 'header1val',
+        customheader2: 'header2val',
+    });
 });
 
 // Impression events are not currently supported
-// test('Should emit impression events on getVariant calls when impressionData is true', (done) => {
-//     const bootstrap = [
-//         {
-//             name: 'impression-variant',
-//             enabled: true,
-//             variant: {
-//                 name: 'disabled',
-//                 enabled: false,
-//             },
-//             impressionData: true,
-//         },
-//     ];
+test('Should emit impression events on getValue calls', (done) => {
+    const bootstrap = [
+        {
+            toggleName: 'impression-value',
+            toggleStatus: TOGGLES_STATUS.ON,
+            toggleValueType: TOGGLES_VALUE_TYPES.STRING,
+            toggleValue: 'the-value',
+        },
+    ];
 
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//
-//         bootstrap,
-//     };
-//     const client = new ToggledClient(config);
-//     client.start();
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+        impressionDataAll: true,
+        bootstrap,
+    };
+    const client = new ToggledClient(config);
+    client.start();
 
-//     client.on(EVENTS.READY, () => {
-//         const isEnabled = client.getVariant('impression-variant');
-//         expect(isEnabled).toBe(true);
-//     });
+    client.on(EVENTS.READY, () => {
+        const value = client.getValue('impression-value');
+        expect(value).toBe('the-value');
+    });
 
-//     client.on(EVENTS.IMPRESSION, (event: any) => {
-//         expect(event.featureName).toBe('impression-variant');
-//         expect(event.eventType).toBe('getVariant');
-//         expect(event.impressionData).toBe(true);
-//         client.stop();
-//         done();
-//     });
-// });
+    client.on(EVENTS.IMPRESSION, (event: any) => {
+        expect(event.featureName).toBe('impression-value');
+        expect(event.eventType).toBe('getValue');
+        client.stop();
+        done();
+    });
+});
 
-// test('Should not emit impression events on isEnabled calls when impressionData is false', (done) => {
-//     const bootstrap = [
-//         {
-//             name: 'impression',
-//             enabled: true,
-//             variant: {
-//                 name: 'disabled',
-//                 enabled: false,
-//             },
-//             impressionData: false,
-//         },
-//     ];
+test('Should not emit impression events on isEnabled calls when impressionDataAll is false', (done) => {
+    const bootstrap = [
+        {
+            toggleName: 'impression',
+            toggleStatus: TOGGLES_STATUS.ON,
+            toggleValueType: TOGGLES_VALUE_TYPES.STRING,
+            toggleValue: 'the-value',
+        },
+    ];
 
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//
-//         bootstrap,
-//     };
-//     const client = new ToggledClient(config);
-//     client.start();
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+        impressionDataAll: false,
+        bootstrap,
+    };
+    const client = new ToggledClient(config);
+    client.start();
 
-//     client.on(EVENTS.READY, () => {
-//         const isEnabled = client.isEnabled('impression');
-//         expect(isEnabled).toBe(true);
-//         client.stop();
-//         done();
-//     });
+    client.on(EVENTS.READY, () => {
+        const isEnabled = client.isEnabled('impression');
+        expect(isEnabled).toBe(true);
+        client.stop();
+        done();
+    });
 
-//     client.on(EVENTS.IMPRESSION, () => {
-//         client.stop();
-//         fail('SDK should not emit impression event');
-//     });
-// });
+    client.on(EVENTS.IMPRESSION, () => {
+        client.stop();
+        fail('SDK should not emit impression event');
+    });
+});
 
 // test('Should emit impression events on isEnabled calls when impressionData is false and impressionDataAll is true', (done) => {
 //     const bootstrap = [
@@ -1193,85 +1179,38 @@ test('Should pass custom headers', async () => {
 //     });
 // });
 
-// test('Should emit impression events on isEnabled calls when toggle is unknown and impressionDataAll is true', (done) => {
-//     const bootstrap = [
-//         {
-//             name: 'impression',
-//             enabled: true,
-//             variant: {
-//                 name: 'disabled',
-//                 enabled: false,
-//             },
-//             impressionData: false,
-//         },
-//     ];
+test('Should emit impression events on isEnabled calls when toggle is unknown and impressionDataAll is true', (done) => {
+    const bootstrap = [
+        {
+            toggleName: 'impression-value',
+            toggleStatus: TOGGLES_STATUS.ON,
+            toggleValueType: TOGGLES_VALUE_TYPES.STRING,
+            toggleValue: 'the-value',
+        },
+    ];
 
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//
-//         bootstrap,
-//         impressionDataAll: true,
-//     };
-//     const client = new ToggledClient(config);
-//     client.start();
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+        bootstrap,
+        impressionDataAll: true,
+    };
+    const client = new ToggledClient(config);
+    client.start();
 
-//     client.on(EVENTS.READY, () => {
-//         const isEnabled = client.isEnabled('unknown');
-//         expect(isEnabled).toBe(true);
-//     });
+    client.on(EVENTS.READY, () => {
+        const isEnabled = client.isEnabled('unknown');
+        expect(isEnabled).toBe(true);
+    });
 
-//     client.on(EVENTS.IMPRESSION, (event: any) => {
-//         expect(event.featureName).toBe('unknown');
-//         expect(event.eventType).toBe('isEnabled');
-//         expect(event.enabled).toBe(false);
-//         expect(event.impressionData).toBe(undefined);
-//         client.stop();
-//         done();
-//     });
-// });
-
-// test('Should emit impression events on getVariant calls when impressionData is false and impressionDataAll is true', (done) => {
-//     const bootstrap = [
-//         {
-//             name: 'impression-variant',
-//             enabled: true,
-//             variant: {
-//                 name: 'disabled',
-//                 enabled: false,
-//             },
-//             impressionData: false,
-//         },
-//     ];
-
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//
-//         bootstrap,
-//         impressionDataAll: true,
-//     };
-//     const client = new ToggledClient(config);
-//     client.start();
-
-//     client.on(EVENTS.READY, () => {
-//         const isEnabled = client.getVariant('impression-variant');
-//         expect(isEnabled).toBe(true);
-//     });
-
-//     client.on(EVENTS.IMPRESSION, (event: any) => {
-//         try {
-//             expect(event.featureName).toBe('impression-variant');
-//             expect(event.eventType).toBe('getVariant');
-//             expect(event.impressionData).toBe(false);
-//             client.stop();
-//             done();
-//         } catch (e) {
-//             client.stop();
-//             done(e);
-//         }
-//     });
-// });
+    client.on(EVENTS.IMPRESSION, (event: any) => {
+        expect(event.featureName).toBe('unknown');
+        expect(event.eventType).toBe('isEnabled');
+        expect(event.enabled).toBe(false);
+        client.stop();
+        done();
+    });
+});
 
 test('Should publish ready only when the first fetch was successful', async () => {
     fetchMock.mockResponse(JSON.stringify(data));
@@ -1345,71 +1284,56 @@ test.each([null, undefined])(
     }
 );
 
-// Metrics are currently not supported
+test('Should report metrics', async () => {
+    const toggles: IToggle[] = [
+        {
+            toggleName: 'toggle',
+            toggleStatus: TOGGLES_STATUS.ON,
+            toggleValue: true,
+            toggleValueType: TOGGLES_VALUE_TYPES.BOOLEAN,
+        },
+    ];
 
-// test('Should report metrics', async () => {
-//     const toggles: IToggle[] = [
-//         {
-//             name: 'toggle',
-//             enabled: true,
-//             variant: {
-//                 name: 'variant',
-//                 enabled: true,
-//             },
-//             impressionData: true,
-//         },
-//     ];
+    const config: IConfig = {
+        url: TOGGLED_PLATFORM_URLS.TEST,
+        clientKey: '12',
+        fetch: async () => {
+            return {
+                ok: true,
+                headers: new Map(),
+                async json() {
+                    return { items: toggles };
+                },
+            };
+        },
+    };
+    const client = new ToggledClient(config);
+    await client.start();
 
-//     const config: IConfig = {
-//         url: TOGGLED_PLATFORM_URLS.TEST,
-//         clientKey: '12',
-//
-//         fetch: async () => {
-//             return {
-//                 ok: true,
-//                 headers: new Map(),
-//                 async json() {
-//                     return { toggles };
-//                 },
-//             };
-//         },
-//     };
-//     const client = new ToggledClient(config);
-//     await client.start();
+    client.getValue('toggle');
+    client.getValue('non-existent-toggle');
+    jest.advanceTimersByTime(2500); // fist metric sent after 2 seconds
 
-//     client.getVariant('toggle');
-//     client.getVariant('non-existent-toggle');
-//     jest.advanceTimersByTime(2500); // fist metric sent after 2 seconds
-
-//     const data = await new Promise((resolve) => {
-//         client.on(EVENTS.SENT, (data: any) => {
-//             resolve(data);
-//         });
-//     });
-//     expect(data).toMatchObject({
-//
-//         bucket: {
-//             toggles: {
-//                 'non-existent-toggle': {
-//                     yes: 0,
-//                     no: 1,
-//                     variants: { disabled: 1 },
-//                 },
-//                 toggle: { yes: 1, no: 0, variants: { variant: 1 } },
-//             },
-//         },
-//     });
-//     client.stop();
-// });
-
-test('Should require disabled metrics', () => {
-    expect(() => {
-        new ToggledClient({
-            url: TOGGLED_PLATFORM_URLS.TEST,
-            clientKey: '12',
-            disableMetrics: false,
+    const data = await new Promise((resolve) => {
+        client.on(EVENTS.SENT, (data: any) => {
+            resolve(data);
         });
-    }).toThrow();
+    });
+    expect(data).toMatchObject({
+        bucket: {
+            toggles: {
+                'non-existent-toggle': {
+                    enable_count: 0,
+                    disable_count: 1,
+                },
+                toggle: {
+                    enable_count: 1,
+                    disable_count: 0,
+                },
+            },
+        },
+    });
+    client.stop();
 });
 
 test('Should require GET requests', () => {

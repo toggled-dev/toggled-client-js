@@ -14,7 +14,6 @@ afterEach(() => {
 test('should be disabled by flag disableMetrics', async () => {
     const metrics = new Metrics({
         onError: console.error,
-        appName: 'test',
         metricsInterval: 0,
         disableMetrics: true,
         url: 'http://localhost:3000',
@@ -33,7 +32,6 @@ test('should be disabled by flag disableMetrics', async () => {
 test('should send metrics', async () => {
     const metrics = new Metrics({
         onError: console.error,
-        appName: 'test',
         metricsInterval: 0,
         disableMetrics: false,
         url: 'http://localhost:3000',
@@ -46,8 +44,8 @@ test('should send metrics', async () => {
     metrics.count('foo', true);
     metrics.count('foo', false);
     metrics.count('bar', false);
-    metrics.countVariant('foo', 'foo-variant');
-    metrics.countVariant('foo', 'foo-variant');
+    //metrics.countVariant('foo', 'foo-variant');
+    //metrics.countVariant('foo', 'foo-variant');
 
     await metrics.sendMetrics();
 
@@ -59,17 +57,16 @@ test('should send metrics', async () => {
         request
     );
 
-    expect(body.bucket.toggles.foo.yes).toEqual(2);
-    expect(body.bucket.toggles.foo.no).toEqual(1);
-    expect(body.bucket.toggles.bar.yes).toEqual(0);
-    expect(body.bucket.toggles.bar.no).toEqual(1);
-    expect(body.bucket.toggles.foo.variants).toEqual({ 'foo-variant': 2 });
+    expect(body.bucket.toggles.foo.enable_count).toEqual(2);
+    expect(body.bucket.toggles.foo.disable_count).toEqual(1);
+    expect(body.bucket.toggles.bar.enable_count).toEqual(0);
+    expect(body.bucket.toggles.bar.disable_count).toEqual(1);
+    //expect(body.bucket.toggles.foo.variants).toEqual({ 'foo-variant': 2 });
 });
 
 test('should send metrics with custom auth header', async () => {
     const metrics = new Metrics({
         onError: console.error,
-        appName: 'test',
         metricsInterval: 0,
         disableMetrics: false,
         url: 'http://localhost:3000',
@@ -92,7 +89,6 @@ test('should send metrics with custom auth header', async () => {
 test('Should send initial metrics after 2 seconds', () => {
     const metrics = new Metrics({
         onError: console.error,
-        appName: 'test',
         metricsInterval: 5,
         disableMetrics: false,
         url: 'http://localhost:3000',
@@ -115,7 +111,6 @@ test('Should send initial metrics after 2 seconds', () => {
 test('should send metrics based on timer interval', async () => {
     const metrics = new Metrics({
         onError: console.error,
-        appName: 'test',
         metricsInterval: 5,
         disableMetrics: false,
         url: new URL('http://localhost:3000'),
@@ -154,7 +149,6 @@ describe('Custom headers for metrics', () => {
     const runMetrics = async (customHeaders: Record<string, string>) => {
         const metrics = new Metrics({
             onError: console.error,
-            appName: 'test',
             metricsInterval: 5,
             disableMetrics: false,
             url: 'http://localhost:3000',

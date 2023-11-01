@@ -4,7 +4,11 @@ import type IStorageProvider from './storage-provider';
 import InMemoryStorageProvider from './storage-provider-inmemory';
 import LocalStorageProvider from './storage-provider-local';
 import EventsHandler from './events-handler';
-import { notNullOrUndefined, urlWithContextAsQuery } from './util';
+import {
+    notNullOrUndefined,
+    urlWithContextAsQuery,
+    clientIdentifier,
+} from './util';
 
 type IContext = {
     [key: string]: string | undefined;
@@ -62,14 +66,12 @@ export enum TOGGLED_PLATFORM_URLS {
     TEST = 'http://localhost/test',
 }
 
-// const IMPRESSION_EVENTS = {
-//     IS_ENABLED: 'isEnabled',
-//     GET_VARIANT: 'getVariant',
-// };
+const IMPRESSION_EVENTS = {
+    IS_ENABLED: 'isEnabled',
+    GET_VALUE: 'getValue',
+};
 
 const storeKey = 'repo';
-
-const clientIdentifier = 'js-v1';
 
 export const resolveFetch = () => {
     try {
@@ -115,7 +117,7 @@ export class ToggledClient extends TinyEmitter {
         disableRefresh = false,
         refreshInterval = 30,
         metricsInterval = 30,
-        disableMetrics = true,
+        disableMetrics = false,
         context,
         fetch = resolveFetch(),
         bootstrap,
@@ -132,9 +134,6 @@ export class ToggledClient extends TinyEmitter {
         }
         if (!clientKey) {
             throw new Error('clientKey is required');
-        }
-        if (!disableMetrics) {
-            throw new Error('metrics are not currently supported.');
         }
         if (usePOSTrequests) {
             throw new Error('POST requests are not currently supported.');
@@ -183,7 +182,6 @@ export class ToggledClient extends TinyEmitter {
         this.metrics = new Metrics({
             onError: this.emit.bind(this, EVENTS.ERROR),
             onSent: this.emit.bind(this, EVENTS.SENT),
-            appName: 'metrics', //TODO REMOVE THIS
             metricsInterval,
             disableMetrics,
             url: this.url,
@@ -199,48 +197,52 @@ export class ToggledClient extends TinyEmitter {
     }
 
     public isEnabled(toggleName: string): boolean {
+        if (!this.toggles) {
+            return false;
+        }
+
         const toggle = this.toggles.find((t) => t.toggleName === toggleName);
         const enabled = toggle
             ? toggle.toggleStatus === TOGGLES_STATUS.ON
             : false;
 
-        // this.metrics.count(toggleName, enabled);
-        // if (toggle?.impressionData || this.impressionDataAll) {
-        //     const event = this.eventsHandler.createImpressionEvent(
-        //         this.context,
-        //         enabled,
-        //         toggleName,
-        //         IMPRESSION_EVENTS.IS_ENABLED,
-        //         toggle?.impressionData ?? undefined
-        //     );
-        //     this.emit(EVENTS.IMPRESSION, event);
-        // }
+        this.metrics.count(toggleName, enabled);
+        if (this.impressionDataAll) {
+            const event = this.eventsHandler.createImpressionEvent(
+                this.context,
+                enabled,
+                toggleName,
+                IMPRESSION_EVENTS.IS_ENABLED
+            );
+            this.emit(EVENTS.IMPRESSION, event);
+        }
 
         return enabled;
     }
 
     public getValue(toggleName: string): boolean | string | undefined {
+        if (!this.toggles) {
+            return undefined;
+        }
+
         const toggle = this.toggles.find((t) => t.toggleName === toggleName);
+        const value = toggle ? toggle.toggleValue : undefined;
+        const enabled = toggle
+            ? toggle.toggleStatus === TOGGLES_STATUS.ON
+            : false;
 
-        const variant = toggle ? toggle.toggleValue : undefined;
-
-        // const enabled = toggle?.enabled || false;
-        // if (variant.name) {
-        //     this.metrics.countVariant(toggleName, variant.name);
-        // }
-        // this.metrics.count(toggleName, enabled);
-        // if (toggle?.impressionData || this.impressionDataAll) {
-        //     const event = this.eventsHandler.createImpressionEvent(
-        //         this.context,
-        //         enabled,
-        //         toggleName,
-        //         IMPRESSION_EVENTS.GET_VARIANT,
-        //         toggle?.impressionData ?? undefined,
-        //         variant.name
-        //     );
-        //     this.emit(EVENTS.IMPRESSION, event);
-        // }
-        return variant;
+        this.metrics.count(toggleName, enabled);
+        if (this.impressionDataAll) {
+            const event = this.eventsHandler.createImpressionEvent(
+                this.context,
+                enabled,
+                toggleName,
+                IMPRESSION_EVENTS.GET_VALUE,
+                value
+            );
+            this.emit(EVENTS.IMPRESSION, event);
+        }
+        return value;
     }
 
     public async updateContext(context: IContext): Promise<void> {

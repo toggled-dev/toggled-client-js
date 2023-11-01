@@ -13,3 +13,5 @@ export const urlWithContextAsQuery = (url: URL, context: IContext) => {
     });
     return urlWithQuery;
 };
+
+export const clientIdentifier = 'js-v1';

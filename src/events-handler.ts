@@ -11,15 +11,13 @@ class EventsHandler {
         enabled: boolean,
         featureName: string,
         eventType: string,
-        impressionData?: boolean,
-        variant?: string
+        variant?: string | boolean
     ) {
         const baseEvent = this.createBaseEvent(
             context,
             enabled,
             featureName,
-            eventType,
-            impressionData
+            eventType
         );
 
         if (variant) {
@@ -35,8 +33,7 @@ class EventsHandler {
         context: IContext,
         enabled: boolean,
         featureName: string,
-        eventType: string,
-        impressionData?: boolean
+        eventType: string
     ) {
         return {
             eventType,
@@ -44,7 +41,6 @@ class EventsHandler {
             context,
             enabled,
             featureName,
-            impressionData,
         };
     }
 }
