@@ -119,13 +119,13 @@ The Toggled SDK takes the following options:
 | refreshInterval   | no | `30` | How often, in seconds, the SDK should check for updated toggle configuration. If set to 0 will disable checking for updates                 |
 | disableRefresh    | no | `false` | If set to true, the client will not check for updated toggle configuration                                                                |
 | metricsInterval   | no | `60` | How often, in seconds, the SDK should send usage metrics back to Toggled                                                           | 
-| disableMetrics    | no | `true` | Set this option to `fasle` if you want to send usage metrics - Currently not supported                                           |
+| disableMetrics    | no | `true` | Set this option to `fasle` if you want to send usage metrics                                          |
 | storageProvider   | no | `LocalStorageProvider` in browser, `InMemoryStorageProvider` otherwise | Allows you to inject a custom storeProvider                                                                              |
 | fetch             | no | `window.fetch` or global `fetch` | Allows you to override the fetch implementation to use. Useful in Node.js environments where you can inject `node-fetch`                    | 
 | bootstrap         | no | `[]` | Allows you to bootstrap the cached feature toggle configuration.                                                                               | 
 | bootstrapOverride | no| `true` | Should the bootstrap automatically override cached data in the local-storage. Will only be used if bootstrap is not an empty array.     | 
 | customHeaders     | no| `{}` | Additional headers to use when making HTTP requests to the Toggled client endpoint. In case of name collisions with the default headers, the `customHeaders` value will be used if it is not `null` or `undefined`. `customHeaders` values that are `null` or `undefined` will be ignored. |
-| impressionDataAll | no| `false` | Allows you to trigger "impression" events for **all** `getToggle` and `getValue` invocations. This is particularly useful for "disabled" feature toggles that are not visible to frontend SDKs. |
+| impressionDataAll | no| `false` | Allows you to trigger "impression" events for **all** `getToggle` and `getValue` invocations. |
 
 ### Listen for updates via the EventEmitter
 
