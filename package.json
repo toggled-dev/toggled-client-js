@@ -32,7 +32,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@babel/runtime": "^7.22.5",
+    "@babel/runtime": "^7.23.2",
     "@rollup/plugin-commonjs": "^25.0.1",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
